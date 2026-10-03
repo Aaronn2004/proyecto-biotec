@@ -1,3 +1,4 @@
 # Autor
 
-Aarón
+Aaron Blasco Blay
+ablabla@upv.edu.es
