@@ -1,0 +1,22 @@
+# ---- Windows / editores ----
+Thumbs.db
+desktop.ini
+.vscode/
+
+# ---- Android ----
+src/android/.gradle/
+src/android/.idea/
+src/android/.kotlin/
+src/android/build/
+src/android/app/build/
+src/android/local.properties
+src/android/captures/
+*.apk
+*.aab
+*.iml
+
+# ---- Servidor (Node) ----
+node_modules/
+# La base de datos se genera sola al arrancar el servidor
+src/servidor/bd/mediciones.db
+src/servidor/bd/*.db-journal

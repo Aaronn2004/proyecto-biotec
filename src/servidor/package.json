@@ -1,0 +1,13 @@
+{
+  "name": "servidor-pbio",
+  "version": "0.1.0",
+  "description": "Sprint 0 - Servidor REST + lógica del negocio + BD (SQLite) para mediciones de O3. Sin dependencias externas.",
+  "main": "servidor.js",
+  "scripts": {
+    "start": "node servidor.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

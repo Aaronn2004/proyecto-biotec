@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sprint 0 - Última medición</title>
+</head>
+<body>
+  <h1>Última medición</h1>
+
+  <p>Valor O3: <b id="valor">-</b> ppm</p>
+  <p>Tipo: <span id="tipo">-</span> | Contador: <span id="contador">-</span> | Id: <span id="id">-</span></p>
+  <p>Fecha: <span id="fecha">-</span></p>
+  <p id="estado"></p>
+
+  <button id="botonActualizar">Actualizar</button>
+
+  <script src="LogicaFake.js"></script>
+  <script>
+    const laLogica = new LogicaFake()
+
+    // ----------------------------------------------------------
+    // mostrarUltimaMedicion() -->
+    // ----------------------------------------------------------
+    async function mostrarUltimaMedicion() {
+      const estado = document.getElementById("estado")
+      try {
+        const medicion = await laLogica.leerUltimaMedicion()
+        if (medicion === null) {
+          estado.textContent = "Todavía no hay mediciones en la base de datos."
+          return
+        }
+        document.getElementById("valor").textContent = medicion.valor
+        document.getElementById("tipo").textContent = medicion.tipo
+        document.getElementById("contador").textContent = medicion.contador
+        document.getElementById("id").textContent = medicion.id
+        document.getElementById("fecha").textContent = new Date(medicion.fecha).toLocaleString()
+        estado.textContent = "Actualizado: " + new Date().toLocaleTimeString()
+      } catch (error) {
+        estado.textContent = "Error: " + error.message
+      }
+    }
+
+    document.getElementById("botonActualizar").onclick = mostrarUltimaMedicion
+    mostrarUltimaMedicion()
+    setInterval(mostrarUltimaMedicion, 3000) // refresco automático
+  </script>
+</body>
+</html>
