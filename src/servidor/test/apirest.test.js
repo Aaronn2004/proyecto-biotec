@@ -61,5 +61,16 @@ test("Flujo completo: POST y luego LogicaFake web lee la misma medición", async
 test("La web (index.html) se sirve en /", async () => {
     const respuesta = await fetch(url + "/")
     assert.equal(respuesta.status, 200)
-    assert.match(await respuesta.text(), /Última medición/)
+    assert.match(await respuesta.text(), /Últimas mediciones/)
+})
+
+test("GET /medicion/ultima?tipo=N filtra por tipo; tipo no numérico -> 400", async () => {
+    await post({ tipo: 11, valor: 0.111, contador: 9 })
+    await post({ tipo: 12, valor: 22.5, contador: 9 })
+    const o3 = await (await fetch(url + "/medicion/ultima?tipo=11")).json()
+    assert.equal(o3.valor, 0.111)
+    const temperatura = await new LogicaFake(url).leerUltimaMedicion(12)
+    assert.equal(temperatura.valor, 22.5)
+    assert.equal(await new LogicaFake(url).leerUltimaMedicion(13), null)
+    assert.equal((await fetch(url + "/medicion/ultima?tipo=abc")).status, 400)
 })

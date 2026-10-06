@@ -11,8 +11,10 @@ public class Medicion {
     public static final int TIPO_TEMPERATURA = 12;
     public static final int TIPO_RUIDO = 13;
 
-    // El O3 viaja en el minor como ppm * 1000
+    // El O3 viaja en el minor como ppm * 1000 (sin signo)
     private static final double FACTOR_O3 = 1000.0;
+    // La temperatura viaja como décimas de °C (con signo: puede ser negativa)
+    private static final double FACTOR_TEMPERATURA = 10.0;
 
     private final int tipo;
     private final double valor;
@@ -32,9 +34,13 @@ public class Medicion {
     // --------------------------------------------------------------
     public static Medicion desdeTrama(TramaIBeacon trama) {
         int tipo = trama.getTipoMedicion();
-        double valor = trama.getValorEntero();
+        double valor;
         if (tipo == TIPO_O3) {
-            valor = valor / FACTOR_O3;
+            valor = trama.getValorEntero() / FACTOR_O3;
+        } else if (tipo == TIPO_TEMPERATURA) {
+            valor = trama.getValorEnteroConSigno() / FACTOR_TEMPERATURA;
+        } else {
+            valor = trama.getValorEntero();
         }
         return new Medicion(tipo, valor, trama.getContador());
     }

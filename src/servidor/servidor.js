@@ -34,7 +34,7 @@ function crearServidor(laLogica) {
             return
         }
 
-        const ficheroWeb = FICHEROS_WEB[peticion.url]
+        const ficheroWeb = FICHEROS_WEB[new URL(peticion.url, "http://servidor").pathname]
         if (peticion.method === "GET" && ficheroWeb) {
             respuesta.writeHead(200, { "Content-Type": ficheroWeb.tipo })
             respuesta.end(fs.readFileSync(path.join(RUTA_WEB, ficheroWeb.fichero)))

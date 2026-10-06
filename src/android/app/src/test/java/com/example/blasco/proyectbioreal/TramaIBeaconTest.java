@@ -69,4 +69,23 @@ public class TramaIBeaconTest {
     public void medicionToJSON() {
         assertEquals("{\"tipo\":11,\"valor\":0.235,\"contador\":7}", new Medicion(11, 0.235, 7).toJSON());
     }
+
+    @Test
+    public void temperaturaNegativaSeDecodificaConSigno() {
+        // -35 décimas = -3.5 °C ; en 16 bits es 0xFFDD
+        TramaIBeacon trama = new TramaIBeacon(construirAnuncio(true, "AARON-GTI-PBIO-1", (12 << 8) + 9, 0xFFDD));
+        assertEquals(65501, trama.getValorEntero());
+        assertEquals(-35, trama.getValorEnteroConSigno());
+        Medicion medicion = Medicion.desdeTrama(trama);
+        assertEquals(Medicion.TIPO_TEMPERATURA, medicion.getTipo());
+        assertEquals(-3.5, medicion.getValor(), 1e-9);
+        assertEquals(9, medicion.getContador());
+    }
+
+    @Test
+    public void temperaturaPositiva() {
+        Medicion medicion = Medicion.desdeTrama(
+                new TramaIBeacon(construirAnuncio(true, "AARON-GTI-PBIO-1", (12 << 8) + 1, 215)));
+        assertEquals(21.5, medicion.getValor(), 1e-9);
+    }
 }

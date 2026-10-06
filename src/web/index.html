@@ -3,47 +3,60 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sprint 0 - Última medición</title>
+  <title>Sprint 0 - Últimas mediciones</title>
 </head>
 <body>
-  <h1>Última medición</h1>
+  <h1>Últimas mediciones</h1>
 
-  <p>Valor O3: <b id="valor">-</b> ppm</p>
-  <p>Tipo: <span id="tipo">-</span> | Contador: <span id="contador">-</span> | Id: <span id="id">-</span></p>
-  <p>Fecha: <span id="fecha">-</span></p>
+  <h2>Ozono (O3)</h2>
+  <p>Valor: <b id="valor-11">-</b> ppm</p>
+  <p>Contador: <span id="contador-11">-</span> | Id: <span id="id-11">-</span> | Fecha: <span id="fecha-11">-</span></p>
+
+  <h2>Temperatura</h2>
+  <p>Valor: <b id="valor-12">-</b> °C</p>
+  <p>Contador: <span id="contador-12">-</span> | Id: <span id="id-12">-</span> | Fecha: <span id="fecha-12">-</span></p>
+
   <p id="estado"></p>
-
   <button id="botonActualizar">Actualizar</button>
 
   <script src="LogicaFake.js"></script>
   <script>
     const laLogica = new LogicaFake()
+    const TIPOS = { O3: 11, TEMPERATURA: 12 }
 
     // ----------------------------------------------------------
-    // mostrarUltimaMedicion() -->
+    // tipo: N, medicion: Medicion | null --> pintarMedicion()
     // ----------------------------------------------------------
-    async function mostrarUltimaMedicion() {
+    function pintarMedicion(tipo, medicion) {
+      const poner = (campo, texto) => { document.getElementById(campo + "-" + tipo).textContent = texto }
+      if (medicion === null) {
+        poner("valor", "sin datos")
+        return
+      }
+      poner("valor", medicion.valor)
+      poner("contador", medicion.contador)
+      poner("id", medicion.id)
+      poner("fecha", new Date(medicion.fecha).toLocaleString())
+    }
+
+    // ----------------------------------------------------------
+    // mostrarUltimasMediciones() -->
+    // ----------------------------------------------------------
+    async function mostrarUltimasMediciones() {
       const estado = document.getElementById("estado")
       try {
-        const medicion = await laLogica.leerUltimaMedicion()
-        if (medicion === null) {
-          estado.textContent = "Todavía no hay mediciones en la base de datos."
-          return
+        for (const tipo of Object.values(TIPOS)) {
+          pintarMedicion(tipo, await laLogica.leerUltimaMedicion(tipo))
         }
-        document.getElementById("valor").textContent = medicion.valor
-        document.getElementById("tipo").textContent = medicion.tipo
-        document.getElementById("contador").textContent = medicion.contador
-        document.getElementById("id").textContent = medicion.id
-        document.getElementById("fecha").textContent = new Date(medicion.fecha).toLocaleString()
         estado.textContent = "Actualizado: " + new Date().toLocaleTimeString()
       } catch (error) {
         estado.textContent = "Error: " + error.message
       }
     }
 
-    document.getElementById("botonActualizar").onclick = mostrarUltimaMedicion
-    mostrarUltimaMedicion()
-    setInterval(mostrarUltimaMedicion, 3000) // refresco automático
+    document.getElementById("botonActualizar").onclick = mostrarUltimasMediciones
+    mostrarUltimasMediciones()
+    setInterval(mostrarUltimasMediciones, 2000) // refresco automático cada 2 s
   </script>
 </body>
 </html>

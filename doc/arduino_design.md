@@ -14,6 +14,9 @@
                  |
             Z <-- medirO3() <--            // ppm * 1000 (valor FICTICIO)
                  |
+                 |
+            Z <-- medirTemperatura() <--   // décimas de °C (valor FICTICIO, puede ser negativo)
+                 |
                  -----------------------------------
 
                  --------- EmisoraBLE --------------
@@ -54,7 +57,17 @@ rssi: Z      --> emitirAnuncioIBeacon() -->
                  |
 valor: Z,
 contador: N,
-tiempoEspera: N --> publicarO3() -->       // major = (11 << 8) + contador ; minor = valor
+tiempoEspera: N --> publicarO3() -->       // publicarMedida( O3, ... )
+                 |
+                 |
+valor: Z,
+contador: N,
+tiempoEspera: N --> publicarTemperatura() -->   // publicarMedida( TEMPERATURA, ... )
+                 |
+tipo: N,
+valor: Z,
+contador: N,
+tiempoEspera: N --> publicarMedida() -->   // (privado) major = (tipo << 8) + contador ; minor = valor
                  |
                  -----------------------------------
 
@@ -92,12 +105,14 @@ tiempoEspera: N --> publicarO3() -->       // major = (11 << 8) + contador ; min
 
 ```text
 setup():  elPublicador.encenderEmisora() ; elMedidor.iniciarMedidor()
-loop():   contador++ ; valor = elMedidor.medirO3() ; elPublicador.publicarO3( valor, contador, 3000 )
+loop():   contador++ ;
+          elPublicador.publicarO3( elMedidor.medirO3(), contador, TIEMPO_ENTRE_DATOS_MS ) ;   // 2000 ms
+          elPublicador.publicarTemperatura( elMedidor.medirTemperatura(), contador, TIEMPO_ENTRE_DATOS_MS )
 ```
 
 ## Aclaraciones del Diseño
 
-- **Medida ficticia**: se cambia en `Medidor.h` (`VALOR_O3_FICTICIO`). Con `USAR_VALOR_ALEATORIO = true` genera valores entre `VALOR_MIN` y `VALOR_MAX`.
+- **Medidas ficticias**: se cambian en `Medidor.h` (`VALOR_O3_FICTICIO`, `VALOR_TEMPERATURA_FICTICIO`). Con `USAR_VALOR_ALEATORIO = true` genera valores entre `VALOR_MIN` y `VALOR_MAX`.
 - Cambios respecto a la versión anterior de `HolaMundoIBeacon`:
   - `EmisoraBLE` estaba vacía (métodos sin código): **la placa no emitía nada**. Ahora usa la pila Bluefruit.
   - El UUID (`GRUPO-JORDI-BLE0`) no coincidía con el que filtraba la app (`EPSG-GTI-PROY-3A`). Ahora ambos usan `AARON-GTI-PBIO-1`, propio, para no captar los beacons de otros equipos.

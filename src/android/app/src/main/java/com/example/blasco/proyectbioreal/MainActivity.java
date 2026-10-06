@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,19 +23,58 @@ import java.util.ArrayList;
 import java.util.List;
 
 // ==============================================================
-// MainActivity: solo 3 botones. Todo lo que ocurre se ve en el Logcat
-// (filtra por ">>>>").
+// MainActivity: 3 botones y unos textos con lo que está pasando
+// (estado del Bluetooth, última trama de nuestro nodo y servidor).
+// Los detalles completos siguen en el Logcat (filtro ">>>>").
 // ==============================================================
 public class MainActivity extends AppCompatActivity {
 
     private static final String ETIQUETA_LOG = ">>>>";
     private static final int CODIGO_PETICION_PERMISOS = 1234;
 
+    private TextView textoBluetooth, textoO3, textoTemperatura, textoContador,
+            textoRssi, textoTrama, textoServidor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        textoBluetooth = findViewById(R.id.textoBluetooth);
+        textoO3 = findViewById(R.id.textoO3);
+        textoTemperatura = findViewById(R.id.textoTemperatura);
+        textoContador = findViewById(R.id.textoContador);
+        textoRssi = findViewById(R.id.textoRssi);
+        textoTrama = findViewById(R.id.textoTrama);
+        textoServidor = findViewById(R.id.textoServidor);
+
         pedirPermisosNecesarios();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // El servicio puede avisar desde otros hilos: pintamos siempre en el hilo de la UI
+        EstadoNodo.getInstancia().observar(estado -> runOnUiThread(() -> pintarEstado(estado)));
+    }
+
+    @Override
+    protected void onPause() {
+        EstadoNodo.getInstancia().observar(null); // sin pantalla visible no hay nada que pintar
+        super.onPause();
+    }
+
+    // --------------------------------------------------------------
+    // estado: EstadoNodo --> pintarEstado()
+    // --------------------------------------------------------------
+    private void pintarEstado(EstadoNodo estado) {
+        textoBluetooth.setText(estado.getTextoBluetooth());
+        textoO3.setText(estado.getTextoO3());
+        textoTemperatura.setText(estado.getTextoTemperatura());
+        textoContador.setText(estado.getTextoContador());
+        textoRssi.setText(estado.getTextoRssi());
+        textoTrama.setText(estado.getTextoTrama());
+        textoServidor.setText(estado.getTextoServidor());
     }
 
     // --------------------------------------------------------------
@@ -95,10 +135,12 @@ public class MainActivity extends AppCompatActivity {
         BluetoothAdapter adaptador = gestor == null ? null : gestor.getAdapter();
 
         if (adaptador == null) {
+            EstadoNodo.getInstancia().ponerEstadoBluetooth("no disponible (¿emulador?)");
             avisar("Este dispositivo no tiene Bluetooth (¿estás usando el emulador? Usa un móvil real)");
             return false;
         }
         if (!adaptador.isEnabled()) {
+            EstadoNodo.getInstancia().ponerEstadoBluetooth("apagado");
             avisar("El Bluetooth está apagado: enciéndelo y vuelve a pulsar el botón");
             try {
                 startActivity(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE));

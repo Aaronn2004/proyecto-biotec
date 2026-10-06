@@ -13,7 +13,7 @@
                                    └───────────────────────────┘                        │   SQLite (bd/mediciones.db)   │
                                                                                         └───────────────────────────────┘
                                    ┌───────────────────────────┐  HTTP GET /medicion/ultima          ^
-                                   │            WEB            │ ────────────────────────────────────┘
+                                   │            WEB            │ ── (?tipo=11 y ?tipo=12) ───────────┘
                                    │ index.html                │  JSON
                                    │   LogicaFake ── cliente   │
                                    └───────────────────────────┘
@@ -33,7 +33,10 @@ Medicion      = ( id: N, tipo: N, valor: R, contador: N, fecha: Text ) // la dev
 ```text
 uuid  : [N]_16  = "AARON-GTI-PBIO-1" (ASCII)     identifica NUESTRO nodo
 major : N (16 bits) = (tipo << 8) + contador      byte alto: tipo, byte bajo: contador 0..255
-minor : N (16 bits) = valor entero                O3: ppm * 1000  (235 -> 0.235 ppm)
+minor : N (16 bits) = valor entero                O3: ppm * 1000, sin signo  (235 -> 0.235 ppm)
+                                                  TEMPERATURA: décimas de °C, con signo (215 -> 21.5 °C, 0xFFDD -> -3.5 °C)
+
+La placa alterna: anuncia O3 durante 2 s y después temperatura otros 2 s (mismo contador): sale un dato nuevo cada 2 s.
 ```
 
 ### Capas del servidor

@@ -1,34 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<!-- Pantalla única: 3 botones + lo que está pasando (estado, última trama y servidor) -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/botonBuscarDispositivosBTLE"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:onClick="botonBuscarDispositivosBTLEPulsado"
-        android:text="Buscar Dispositivos BTLE nou 4" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <Button
-        android:id="@+id/botonDetenerBusquedaDispositivosBTLE"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:onClick="botonDetenerBusquedaDispositivosBTLEPulsado"
-        android:text="Detener búsqueda Dispositivos BTLE" />
+        <Button
+            android:id="@+id/botonBuscarDispositivosBTLE"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="botonBuscarDispositivosBTLEPulsado"
+            android:text="Buscar dispositivos BTLE" />
 
-    <Button
-        android:id="@+id/botonBuscarNuestroDispositivoBTLE"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="botonBuscarNuestroDispositivoBTLEPulsado"
-        android:text="Buscar nuestro dispositivo BTLE" />
+        <Button
+            android:id="@+id/botonDetenerBusquedaDispositivosBTLE"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="botonDetenerBusquedaDispositivosBTLEPulsado"
+            android:text="Detener búsqueda" />
 
-</LinearLayout>
+        <Button
+            android:id="@+id/botonBuscarNuestroDispositivoBTLE"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="botonBuscarNuestroDispositivoBTLEPulsado"
+            android:text="Buscar nuestro dispositivo BTLE" />
+
+        <TextView
+            android:id="@+id/textoBluetooth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Bluetooth: sin comprobar" />
+
+        <TextView
+            android:id="@+id/textoO3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textSize="20sp"
+            android:text="O₃: --" />
+
+        <TextView
+            android:id="@+id/textoTemperatura"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text="Temperatura: --" />
+
+        <TextView
+            android:id="@+id/textoContador"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Contador: --" />
+
+        <TextView
+            android:id="@+id/textoRssi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="RSSI: --" />
+
+        <TextView
+            android:id="@+id/textoTrama"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Major / Minor: --" />
+
+        <TextView
+            android:id="@+id/textoServidor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Servidor: esperando medidas" />
+
+    </LinearLayout>
+</ScrollView>

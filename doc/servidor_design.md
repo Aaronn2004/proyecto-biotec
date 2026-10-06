@@ -9,7 +9,7 @@ medicion
 +----------+---------+------------------------------------------+
 | id       | INTEGER | PK, AUTOINCREMENT                        |
 | tipo     | INTEGER | NOT NULL   11=O3, 12=temperatura, 13=ruido|
-| valor    | REAL    | NOT NULL   O3 en ppm                     |
+| valor    | REAL    | NOT NULL   O3 en ppm, temperatura en °C  |
 | contador | INTEGER | NOT NULL   nº de muestra de la placa     |
 | fecha    | TEXT    | NOT NULL   ISO 8601 UTC (la pone el servidor) |
 +----------+---------+------------------------------------------+
@@ -32,7 +32,8 @@ m: MedicionNueva --> guardarMedicion() -->  // lanza Error si m no es válida
   r: Medicion    <--
                  |
                  |
- Medicion | null <-- leerUltimaMedicion() <--
+ [tipo: N]    --> leerUltimaMedicion() <--   // sin tipo: la última de cualquier tipo
+ Medicion | null <--
                  |
                  |
                  cerrar() -->
@@ -46,6 +47,7 @@ m: MedicionNueva --> guardarMedicion() -->  // lanza Error si m no es válida
 |--------|--------------------|-------------------|----------------------|-------------------------------------------|--------------------------------|
 | POST   | `/medicion`        | `MedicionNueva` (JSON) | 201 + `Medicion` | 400 `{error}` (JSON mal formado o datos no válidos) | `Logica.guardarMedicion()` |
 | GET    | `/medicion/ultima` | —                 | 200 + `Medicion`     | 404 `{error}` si no hay mediciones        | `Logica.leerUltimaMedicion()`  |
+| GET    | `/medicion/ultima?tipo=N` | —          | 200 + `Medicion` de ese tipo | 400 si `tipo` no es entero; 404 si no hay de ese tipo | `Logica.leerUltimaMedicion(tipo)` |
 
 Además `GET /` sirve la web (`src/web/index.html` y `LogicaFake.js`).
 

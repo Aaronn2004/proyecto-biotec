@@ -10,14 +10,16 @@
 urlBase: Text --> LogicaFake() -->         // "" = el mismo servidor que sirve la página
                  |
                  |
- Medicion | null <-- leerUltimaMedicion() <--   // GET /medicion/ultima (404 -> null)
+ [tipo: N]    --> leerUltimaMedicion() <--   // GET /medicion/ultima[?tipo=N] (404 -> null)
+ Medicion | null <--
                  |
                  -----------------------------------
 
 index.html
-  mostrarUltimaMedicion() -->   // llama a laLogica.leerUltimaMedicion() y pinta valor, tipo, contador, id y fecha
-  botón "Actualizar"            // mostrarUltimaMedicion()
-  refresco automático cada 3 s
+  mostrarUltimasMediciones() -->            // pide la última de O3 (11) y la de temperatura (12)
+  tipo: N, m: Medicion | null --> pintarMedicion() -->   // pinta valor, contador, id y fecha de ese tipo
+  botón "Actualizar"            // mostrarUltimasMediciones()
+  refresco automático cada 2 s
 ```
 
 ## Aclaraciones del Diseño

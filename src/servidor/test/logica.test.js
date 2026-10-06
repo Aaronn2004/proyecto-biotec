@@ -38,3 +38,13 @@ test("guardarMedicion() rechaza mediciones no válidas", () => {
     assert.throws(() => laLogica.guardarMedicion({ tipo: 11, valor: 0.2, contador: -1 }))
     assert.equal(laLogica.leerUltimaMedicion(), null)
 })
+
+test("leerUltimaMedicion(tipo) devuelve la última de ese tipo", () => {
+    laLogica.guardarMedicion({ tipo: 11, valor: 0.235, contador: 1 })
+    laLogica.guardarMedicion({ tipo: 12, valor: 21.5, contador: 1 })
+    laLogica.guardarMedicion({ tipo: 12, valor: -3.5, contador: 2 })
+    assert.equal(laLogica.leerUltimaMedicion(11).valor, 0.235)
+    assert.equal(laLogica.leerUltimaMedicion(12).valor, -3.5)
+    assert.equal(laLogica.leerUltimaMedicion().valor, -3.5)
+    assert.equal(laLogica.leerUltimaMedicion(13), null)
+})

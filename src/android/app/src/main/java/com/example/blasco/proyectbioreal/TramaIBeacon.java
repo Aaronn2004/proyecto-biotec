@@ -13,7 +13,7 @@ import java.util.Arrays;
 //
 // Convención de nuestro proyecto:
 //   major = (tipoMedicion << 8) + contador
-//   minor = valor (entero)
+//   minor = valor (entero; O3 sin signo, temperatura con signo)
 // ==============================================================
 public class TramaIBeacon {
 
@@ -103,6 +103,13 @@ public class TramaIBeacon {
     // --------------------------------------------------------------
     public int getValorEntero() {
         return Utilidades.bytesToIntOK(minor);
+    }
+
+    // --------------------------------------------------------------
+    // getValorEnteroConSigno() --> Z   (minor como entero de 16 bits con signo)
+    // --------------------------------------------------------------
+    public int getValorEnteroConSigno() {
+        return (short) getValorEntero();
     }
 
     public byte[] getLosBytes() { return losBytes; }

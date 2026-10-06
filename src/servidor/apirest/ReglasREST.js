@@ -4,7 +4,8 @@
 // negocio. Aquí NO hay SQL.
 //
 //   POST /medicion          body: {"tipo":11,"valor":0.235,"contador":7}
-//   GET  /medicion/ultima
+//   GET  /medicion/ultima            (última de cualquier tipo)
+//   GET  /medicion/ultima?tipo=12    (última de ese tipo)
 // ==============================================================
 
 // --------------------------------------------------------------
@@ -17,7 +18,9 @@ function crearReglasREST(laLogica) {
 
     return async function manejarPeticionREST(peticion, respuesta) {
 
-        if (peticion.method === "POST" && peticion.url === "/medicion") {
+        const url = new URL(peticion.url, "http://servidor")
+
+        if (peticion.method === "POST" && url.pathname === "/medicion") {
             let medicion
             try {
                 medicion = JSON.parse(await leerCuerpo(peticion))
@@ -33,8 +36,13 @@ function crearReglasREST(laLogica) {
             return true
         }
 
-        if (peticion.method === "GET" && peticion.url === "/medicion/ultima") {
-            const ultima = laLogica.leerUltimaMedicion()
+        if (peticion.method === "GET" && url.pathname === "/medicion/ultima") {
+            const textoTipo = url.searchParams.get("tipo")
+            if (textoTipo !== null && !/^\d+$/.test(textoTipo)) {
+                responderJSON(respuesta, 400, { error: "tipo debe ser un entero >= 0" })
+                return true
+            }
+            const ultima = laLogica.leerUltimaMedicion(textoTipo === null ? undefined : Number(textoTipo))
             if (ultima === null) {
                 responderJSON(respuesta, 404, { error: "no hay mediciones" })
             } else {

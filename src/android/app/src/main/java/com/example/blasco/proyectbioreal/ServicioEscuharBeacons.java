@@ -24,8 +24,10 @@ import androidx.core.content.ContextCompat;
 //
 // Modos (extra MODO del Intent):
 //   MODO_TODOS   -> muestra en el Log todos los dispositivos BLE
-//   MODO_NUESTRO -> solo nuestro iBeacon; cada medida NUEVA se
-//                   envía al servidor con LogicaFake.guardarMedicion()
+//   MODO_NUESTRO -> solo nuestro iBeacon; cada medida NUEVA (por tipo
+//                   y contador) se envía al servidor con
+//                   LogicaFake.guardarMedicion(). Lo que pasa se
+//                   publica en EstadoNodo para que lo pinte la pantalla.
 // ==============================================================
 public class ServicioEscuharBeacons extends Service {
 
@@ -43,10 +45,8 @@ public class ServicioEscuharBeacons extends Service {
     private String modoActual = null;
 
     private final LogicaFake laLogica = new LogicaFake(LogicaFake.URL_SERVIDOR);
-
-    // La placa repite el mismo anuncio muchas veces por segundo durante 3 s.
-    // Solo enviamos al servidor cuando cambia el major (= cambia el contador).
-    private int ultimoMajorEnviado = -1;
+    private final FiltroDuplicados elFiltro = new FiltroDuplicados();
+    private final EstadoNodo elEstado = EstadoNodo.getInstancia();
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -67,10 +67,12 @@ public class ServicioEscuharBeacons extends Service {
         BluetoothAdapter adaptador = gestor == null ? null : gestor.getAdapter();
         if (adaptador == null) {
             Log.e(ETIQUETA_LOG, "Este dispositivo no tiene Bluetooth (¿emulador?)");
+            elEstado.ponerEstadoBluetooth("no disponible (¿emulador?)");
             return null;
         }
         if (!adaptador.isEnabled()) {
             Log.e(ETIQUETA_LOG, "El Bluetooth está apagado");
+            elEstado.ponerEstadoBluetooth("apagado");
             return null;
         }
         return adaptador.getBluetoothLeScanner();
@@ -93,6 +95,7 @@ public class ServicioEscuharBeacons extends Service {
     private void arrancarEscaneo(String modo) {
         if (!tienePermisoEscanear()) {
             Log.e(ETIQUETA_LOG, "Faltan permisos para escanear BLE");
+            elEstado.ponerEstadoBluetooth("faltan permisos");
             return;
         }
         elEscaner = obtenerEscaner();
@@ -102,7 +105,8 @@ public class ServicioEscuharBeacons extends Service {
         }
 
         modoActual = modo;
-        ultimoMajorEnviado = -1;
+        elFiltro.reiniciar();
+        elEstado.reiniciarMedidas();
 
         elCallbackDelEscaner = new ScanCallback() {
             @Override
@@ -117,6 +121,7 @@ public class ServicioEscuharBeacons extends Service {
             @Override
             public void onScanFailed(int codigoError) {
                 Log.e(ETIQUETA_LOG, "Error al escanear BLE. Código: " + codigoError);
+                elEstado.ponerEstadoBluetooth("error al escanear (código " + codigoError + ")");
             }
         };
 
@@ -125,6 +130,9 @@ public class ServicioEscuharBeacons extends Service {
                 .build();
         elEscaner.startScan(null, ajustes, elCallbackDelEscaner);
         Log.d(ETIQUETA_LOG, "Escaneo BLE arrancado en modo " + modo);
+        elEstado.ponerEstadoBluetooth(MODO_NUESTRO.equals(modo)
+                ? "buscando nuestro nodo (" + UUID_NUESTRO_BEACON + ")..."
+                : "buscando todos los dispositivos (ver Logcat)");
     }
 
     // --------------------------------------------------------------
@@ -133,8 +141,17 @@ public class ServicioEscuharBeacons extends Service {
     @SuppressLint("MissingPermission")
     private void mostrarDispositivo(ScanResult resultado) {
         String nombre = resultado.getScanRecord() != null ? resultado.getScanRecord().getDeviceName() : null;
+        String infoIBeacon = "";
+        if (resultado.getScanRecord() != null) {
+            TramaIBeacon trama = new TramaIBeacon(resultado.getScanRecord().getBytes());
+            if (trama.esIBeacon()) {
+                infoIBeacon = " | iBeacon UUID=" + trama.getUUIDComoTexto()
+                        + " major=" + trama.getMajorEntero() + " minor=" + trama.getValorEntero()
+                        + (UUID_NUESTRO_BEACON.equals(trama.getUUIDComoTexto()) ? "  <<< ¡ES EL NUESTRO!" : "");
+            }
+        }
         Log.d(ETIQUETA_LOG, "Dispositivo: " + resultado.getDevice().getAddress()
-                + " | nombre: " + nombre + " | rssi: " + resultado.getRssi());
+                + " | nombre: " + nombre + " | rssi: " + resultado.getRssi() + infoIBeacon);
     }
 
     // --------------------------------------------------------------
@@ -148,16 +165,36 @@ public class ServicioEscuharBeacons extends Service {
         if (!trama.esIBeacon() || !UUID_NUESTRO_BEACON.equals(trama.getUUIDComoTexto())) {
             return;
         }
-        if (trama.getMajorEntero() == ultimoMajorEnviado) {
+        Medicion medicion = Medicion.desdeTrama(trama);
+        elEstado.ponerEstadoBluetooth("recibiendo nuestro nodo");
+        int minor = medicion.getTipo() == Medicion.TIPO_TEMPERATURA
+                ? trama.getValorEnteroConSigno() : trama.getValorEntero();
+        elEstado.registrarMedicion(medicion, resultado.getRssi(), trama.getMajorEntero(), minor);
+
+        if (!elFiltro.esNueva(medicion.getTipo(), medicion.getContador())) {
             return; // anuncio repetido: ya enviado
         }
-        ultimoMajorEnviado = trama.getMajorEntero();
-
-        Medicion medicion = Medicion.desdeTrama(trama);
         Log.d(ETIQUETA_LOG, "¡Nuestro beacon! " + medicion + " rssi=" + resultado.getRssi());
+        enviarAlServidor(medicion);
+    }
 
-        laLogica.guardarMedicion(medicion, (exito, detalle) ->
-                Log.d(ETIQUETA_LOG, (exito ? "POST OK: " : "POST FALLIDO: ") + detalle));
+    // --------------------------------------------------------------
+    // medicion: Medicion --> enviarAlServidor()
+    // Si falla, se olvida la medida para reintentarla en el siguiente anuncio.
+    // --------------------------------------------------------------
+    private void enviarAlServidor(Medicion medicion) {
+        String queEs = medicion.getTipo() == Medicion.TIPO_O3 ? "O₃" : "temperatura";
+        elEstado.ponerEstadoServidor("enviando " + queEs + " (contador " + medicion.getContador() + ")...");
+
+        laLogica.guardarMedicion(medicion, (exito, detalle) -> {
+            Log.d(ETIQUETA_LOG, (exito ? "POST OK: " : "POST FALLIDO: ") + detalle);
+            if (exito) {
+                elEstado.ponerEstadoServidor(queEs + " guardada (contador " + medicion.getContador() + ")");
+            } else {
+                elFiltro.olvidar(medicion.getTipo(), medicion.getContador());
+                elEstado.ponerEstadoServidor("ERROR al guardar " + queEs + ": " + detalle);
+            }
+        });
     }
 
     // --------------------------------------------------------------
@@ -168,6 +205,7 @@ public class ServicioEscuharBeacons extends Service {
         if (elEscaner != null && elCallbackDelEscaner != null && tienePermisoEscanear()) {
             elEscaner.stopScan(elCallbackDelEscaner);
             Log.d(ETIQUETA_LOG, "Escaneo BLE detenido");
+            elEstado.ponerEstadoBluetooth("búsqueda detenida");
         }
         elCallbackDelEscaner = null;
         modoActual = null;

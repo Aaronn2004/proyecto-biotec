@@ -44,12 +44,14 @@ class Logica {
     }
 
     // --------------------------------------------------------------
-    // leerUltimaMedicion() --> Medicion | null
+    // [tipo: N] --> leerUltimaMedicion() --> Medicion | null
+    // Sin tipo: la última de cualquier tipo. Con tipo: la última de ese tipo.
     // --------------------------------------------------------------
-    leerUltimaMedicion() {
-        const fila = this.laBD
-            .prepare("SELECT id, tipo, valor, contador, fecha FROM medicion ORDER BY id DESC LIMIT 1")
-            .get()
+    leerUltimaMedicion(tipo) {
+        const columnas = "SELECT id, tipo, valor, contador, fecha FROM medicion"
+        const fila = tipo === undefined
+            ? this.laBD.prepare(columnas + " ORDER BY id DESC LIMIT 1").get()
+            : this.laBD.prepare(columnas + " WHERE tipo = ? ORDER BY id DESC LIMIT 1").get(tipo)
         return fila ? { ...fila } : null
     }
 

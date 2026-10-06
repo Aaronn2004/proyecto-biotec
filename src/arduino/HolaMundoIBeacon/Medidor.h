@@ -18,6 +18,10 @@ const bool USAR_VALOR_ALEATORIO = false;
 const int16_t VALOR_MIN = 100;
 const int16_t VALOR_MAX = 400;
 
+// Temperatura FICTICIA en décimas de grado (215 = 21.5 °C).
+// Puede ser negativa (-35 = -3.5 °C): viaja como entero con signo.
+const int16_t VALOR_TEMPERATURA_FICTICIO = 215;
+
 class Medidor {
 public:
   // --------------------------------------------------------------
@@ -41,6 +45,16 @@ public:
       return (int16_t) random( VALOR_MIN, VALOR_MAX + 1 );
     }
     return VALOR_O3_FICTICIO;
+  }
+
+  // --------------------------------------------------------------
+  // medirTemperatura() --> Z   (décimas de °C)
+  // --------------------------------------------------------------
+  int16_t medirTemperatura() {
+    if ( USAR_VALOR_ALEATORIO ) {
+      return (int16_t) random( 150, 301 ); // 15.0 .. 30.0 °C
+    }
+    return VALOR_TEMPERATURA_FICTICIO;
   }
 };
 

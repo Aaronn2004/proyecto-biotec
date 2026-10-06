@@ -14,11 +14,12 @@ class LogicaFake {
     }
 
     // --------------------------------------------------------------
-    // leerUltimaMedicion() --> Medicion | null
-    // (asíncrona: devuelve una Promise)
+    // [tipo: N] --> leerUltimaMedicion() --> Medicion | null
+    // (asíncrona: devuelve una Promise). Sin tipo: la última de cualquier tipo.
     // --------------------------------------------------------------
-    async leerUltimaMedicion() {
-        const respuesta = await fetch(this.urlBase + "/medicion/ultima")
+    async leerUltimaMedicion(tipo) {
+        const filtro = tipo === undefined ? "" : "?tipo=" + tipo
+        const respuesta = await fetch(this.urlBase + "/medicion/ultima" + filtro)
         if (respuesta.status === 404) {
             return null
         }
