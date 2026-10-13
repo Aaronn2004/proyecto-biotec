@@ -75,7 +75,7 @@ public class LogicaFakeTest {
         CountDownLatch terminado = new CountDownLatch(1);
         AtomicBoolean exito = new AtomicBoolean(false);
 
-        new LogicaFake(url).guardarMedicion(new Medicion(11, 0.235, 7), (ok, detalle) -> {
+        new LogicaFake(url).guardarMedicion(new Medicion("AARON-GTI-PBIO-1", 11, 0.235, 7), (ok, detalle) -> {
             exito.set(ok);
             terminado.countDown();
         });
@@ -83,7 +83,7 @@ public class LogicaFakeTest {
         assertTrue("no respondió a tiempo", terminado.await(5, TimeUnit.SECONDS));
         assertTrue(exito.get());
         assertEquals("POST /medicion", rutaRecibida.get());
-        assertEquals("{\"tipo\":11,\"valor\":0.235,\"contador\":7}", cuerpoRecibido.get());
+        assertEquals("{\"dispositivo\":\"AARON-GTI-PBIO-1\",\"tipo\":11,\"valor\":0.235}", cuerpoRecibido.get());
     }
 
     @Test
@@ -91,7 +91,7 @@ public class LogicaFakeTest {
         CountDownLatch terminado = new CountDownLatch(1);
         AtomicBoolean exito = new AtomicBoolean(true);
 
-        new LogicaFake("http://127.0.0.1:1").guardarMedicion(new Medicion(11, 0.1, 1), (ok, detalle) -> {
+        new LogicaFake("http://127.0.0.1:1").guardarMedicion(new Medicion("AARON-GTI-PBIO-1", 11, 0.1, 1), (ok, detalle) -> {
             exito.set(ok);
             terminado.countDown();
         });

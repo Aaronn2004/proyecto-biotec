@@ -36,18 +36,19 @@
 
                  --------- Medicion ----------------
                  |
-                 | tipo: N , valor: R , contador: N
+                 | dispositivo: Text , tipo: N , valor: R , contador: N
                  |
+dispositivo: Text,
 tipo: N,
 valor: R,
 contador: N  --> Medicion() -->
                  |
                  |
-trama: TramaIBeacon --> desdeTrama() --x   // O3: minor / 1000 ; TEMPERATURA: minorConSigno / 10
+trama: TramaIBeacon --> desdeTrama() --x   // dispositivo = UUID ; O3: minor / 1000 ; TEMPERATURA: minorConSigno / 10
      r: Medicion    <--
                  |
                  |
-         Text <-- toJSON() <--
+         Text <-- toJSON() <--             // {"dispositivo","tipo","valor"} (el contador no se envía)
                  |
                  -----------------------------------
 
@@ -177,6 +178,7 @@ ScanResult --> TramaIBeacon --> ¿esIBeacon y uuid == "AARON-GTI-PBIO-1"?
 - Pantalla: 3 botones + textos con el estado del Bluetooth, la última medida de O3 y de temperatura, contador, RSSI, major/minor y el resultado del último envío al servidor. El detalle completo sigue en Logcat (filtro `>>>>`).
 - El servicio no toca la interfaz: publica en `EstadoNodo` y la actividad lo observa (patrón Observador). Así `EstadoNodo` se prueba con JUnit sin móvil.
 - `LogicaFake.URL_SERVIDOR` debe apuntar a la IP del PC que ejecuta el servidor (móvil y PC en la misma WiFi).
+- Al servidor se envían `dispositivo` (UUID), `tipo` y `valor`. El `contador` se queda en el móvil: sirve para el filtro de duplicados y para la pantalla, pero no se guarda en la BD.
 - Solo se envía una medida por (tipo, contador): evita cientos de POST repetidos por el mismo anuncio. O3 y temperatura comparten contador, por eso el filtro va por tipo. Si el POST falla, se olvida la medida y se reintenta en el siguiente anuncio repetido.
 - `TramaIBeacon` busca la cabecera iBeacon en lugar de usar posiciones fijas (el campo *flags* puede estar o no).
 - `Medicion.toJSON()` se construye a mano porque `org.json` no funciona en los tests JUnit locales.

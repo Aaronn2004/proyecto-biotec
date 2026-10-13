@@ -34,8 +34,8 @@ public class EstadoNodoTest {
 
     @Test
     public void guardaO3YTemperaturaPorSeparado() {
-        estado.registrarMedicion(new Medicion(Medicion.TIPO_O3, 0.235, 7), -60, (11 << 8) + 7, 235);
-        estado.registrarMedicion(new Medicion(Medicion.TIPO_TEMPERATURA, -3.5, 7), -61, (12 << 8) + 7, -35);
+        estado.registrarMedicion(new Medicion("AARON-GTI-PBIO-1", Medicion.TIPO_O3, 0.235, 7), -60, (11 << 8) + 7, 235);
+        estado.registrarMedicion(new Medicion("AARON-GTI-PBIO-1", Medicion.TIPO_TEMPERATURA, -3.5, 7), -61, (12 << 8) + 7, -35);
         assertEquals("O₃: 0.235 ppm", estado.getTextoO3());
         assertEquals("Temperatura: -3.5 °C", estado.getTextoTemperatura());
         assertEquals("Contador: 7", estado.getTextoContador());

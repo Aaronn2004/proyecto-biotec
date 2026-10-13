@@ -5,12 +5,12 @@
 ```text
  ┌──────────────┐  BLE / iBeacon   ┌───────────────────────────┐  HTTP POST /medicion   ┌───────────────────────────────┐
  │   ARDUINO    │ ───────────────> │          ANDROID          │ ─────────────────────> │           SERVIDOR            │
- │ nRF52840     │  UUID, major,    │ ServicioEscuharBeacons    │  JSON                  │ servidor.js (punto de entrada)│
- │ Medidor      │  minor           │   TramaIBeacon            │                        │   ReglasREST  (API REST)      │
- │ Publicador   │                  │   Medicion                │                        │   Logica      (lógica negocio)│
+ │ nRF52840     │  UUID, major,    │ ServicioEscuharBeacons    │  JSON                  │ Plesk UPV (https)             │
+ │ Medidor      │  minor           │   TramaIBeacon            │                        │   api.php     (API REST)      │
+ │ Publicador   │                  │   Medicion                │                        │   Logica.php  (lógica negocio)│
  │ EmisoraBLE   │                  │   LogicaFake ── cliente   │                        │      │                        │
  └──────────────┘                  │   PeticionarioREST  REST  │                        │      v                        │
-                                   └───────────────────────────┘                        │   SQLite (bd/mediciones.db)   │
+                                   └───────────────────────────┘                        │   MariaDB (tabla medicion)    │
                                                                                         └───────────────────────────────┘
                                    ┌───────────────────────────┐  HTTP GET /medicion/ultima          ^
                                    │            WEB            │ ── (?tipo=11 y ?tipo=12) ───────────┘
@@ -24,8 +24,8 @@
 ```text
 TipoMedicion = { O3 = 11, TEMPERATURA = 12, RUIDO = 13 }
 
-MedicionNueva = ( tipo: N, valor: R, contador: N )                   // la envía el móvil
-Medicion      = ( id: N, tipo: N, valor: R, contador: N, fecha: Text ) // la devuelve el servidor
+MedicionNueva = ( dispositivo: Text, tipo: N, valor: R )               // la envía el móvil (dispositivo = UUID del iBeacon)
+Medicion      = ( dispositivo: Text, tipo: N, valor: R, fecha: Text )   // la devuelve el servidor (fecha la pone él)
 ```
 
 ### Protocolo iBeacon (Arduino -> Android)
@@ -42,10 +42,10 @@ La placa alterna: anuncia O3 durante 2 s y después temperatura otros 2 s (mismo
 ### Capas del servidor
 
 ```text
-Punto de entrada (servidor.js) --> API REST (ReglasREST.js) --> Lógica del negocio (Logica.js) --> BD (SQLite)
+API REST (api.php) --> Lógica del negocio (Logica.php) --> BD (MariaDB)          // todo en el hosting Plesk de la UPV
 ```
 
-Solo `Logica` conoce la base de datos. Solo `ReglasREST` conoce HTTP.
+Solo `Logica` conoce la base de datos. Solo `api.php` conoce HTTP.
 
 ## Aclaraciones del Diseño
 
@@ -56,7 +56,7 @@ Solo `Logica` conoce la base de datos. Solo `ReglasREST` conoce HTTP.
 
 ## Reglas Generales
 
-- Lenguajes: C++ (Arduino), Java (Android), JavaScript/Node.js >= 22.13 (servidor y web).
+- Lenguajes: C++ (Arduino), Java (Android), PHP 8 + MariaDB (servidor, en Plesk), HTML + JavaScript (web).
 - Cada función/método lleva su diseño lógico en un comentario delimitado por `--------------------`.
 - Código claro y autoexplicativo, nombres en castellano.
 - Tests automáticos para la lógica del negocio, la API REST y las LogicaFake.

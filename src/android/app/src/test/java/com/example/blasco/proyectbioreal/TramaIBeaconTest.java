@@ -60,14 +60,16 @@ public class TramaIBeaconTest {
     public void medicionDesdeTramaConvierteO3APpm() {
         TramaIBeacon trama = new TramaIBeacon(construirAnuncio(true, "AARON-GTI-PBIO-1", (11 << 8) + 7, 235));
         Medicion medicion = Medicion.desdeTrama(trama);
+        assertEquals("AARON-GTI-PBIO-1", medicion.getDispositivo());
         assertEquals(Medicion.TIPO_O3, medicion.getTipo());
         assertEquals(0.235, medicion.getValor(), 1e-9);
         assertEquals(7, medicion.getContador());
     }
 
     @Test
-    public void medicionToJSON() {
-        assertEquals("{\"tipo\":11,\"valor\":0.235,\"contador\":7}", new Medicion(11, 0.235, 7).toJSON());
+    public void medicionToJSONLlevaDispositivoTipoYValorPeroNoContador() {
+        assertEquals("{\"dispositivo\":\"AARON-GTI-PBIO-1\",\"tipo\":11,\"valor\":0.235}",
+                new Medicion("AARON-GTI-PBIO-1", 11, 0.235, 7).toJSON());
     }
 
     @Test

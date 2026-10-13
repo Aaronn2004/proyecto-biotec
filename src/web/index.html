@@ -10,11 +10,11 @@
 
   <h2>Ozono (O3)</h2>
   <p>Valor: <b id="valor-11">-</b> ppm</p>
-  <p>Contador: <span id="contador-11">-</span> | Id: <span id="id-11">-</span> | Fecha: <span id="fecha-11">-</span></p>
+  <p>Dispositivo: <span id="dispositivo-11">-</span> | Fecha: <span id="fecha-11">-</span></p>
 
   <h2>Temperatura</h2>
   <p>Valor: <b id="valor-12">-</b> °C</p>
-  <p>Contador: <span id="contador-12">-</span> | Id: <span id="id-12">-</span> | Fecha: <span id="fecha-12">-</span></p>
+  <p>Dispositivo: <span id="dispositivo-12">-</span> | Fecha: <span id="fecha-12">-</span></p>
 
   <p id="estado"></p>
   <button id="botonActualizar">Actualizar</button>
@@ -34,8 +34,7 @@
         return
       }
       poner("valor", medicion.valor)
-      poner("contador", medicion.contador)
-      poner("id", medicion.id)
+      poner("dispositivo", medicion.dispositivo)
       poner("fecha", new Date(medicion.fecha).toLocaleString())
     }
 

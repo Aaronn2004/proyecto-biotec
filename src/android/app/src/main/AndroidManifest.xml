@@ -14,7 +14,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
-    <!-- usesCleartextTraffic: el servidor del Sprint 0 es http (sin s) -->
+    <!-- usesCleartextTraffic: solo hace falta si pruebas contra un servidor http (sin s) en tu PC; Plesk usa https -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

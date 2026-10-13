@@ -6,10 +6,10 @@ package com.example.blasco.proyectbioreal;
 // ==============================================================
 public class LogicaFake {
 
-    // >>> CAMBIA ESTO por la IP de tu PC en la red WiFi (ipconfig en Windows) <<<
-    // El móvil y el PC tienen que estar en la misma red.
-    // (En el emulador de Android, el PC es 10.0.2.2, pero el emulador no tiene BLE.)
-    public static final String URL_SERVIDOR = "http://192.168.1.100:8080";
+    // Dirección de api.php en el hosting Plesk de la UPV
+    // Es la dirección de api.php en tu hosting (la misma carpeta que la web).
+    // Al estar en internet, el móvil no tiene que estar en la misma WiFi que el PC.
+    public static final String URL_SERVIDOR = "https://ablabla.upv.edu.es/biometria/api.php";
 
     public interface Resultado {
         void callback(boolean exito, String detalle);
@@ -19,7 +19,7 @@ public class LogicaFake {
     private final PeticionarioREST elPeticionario = new PeticionarioREST();
 
     // --------------------------------------------------------------
-    // urlServidor: Text --> LogicaFake()
+    // urlServidor: Text (dirección de api.php) --> LogicaFake()
     // --------------------------------------------------------------
     public LogicaFake(String urlServidor) {
         this.urlServidor = urlServidor;

@@ -1,2 +1,2 @@
-bd/mediciones.db
-node_modules/
+# Lleva la contraseña de la base de datos: no se sube
+config.php

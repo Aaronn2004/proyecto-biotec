@@ -15,8 +15,6 @@ src/android/captures/
 *.aab
 *.iml
 
-# ---- Servidor (Node) ----
-node_modules/
-# La base de datos se genera sola al arrancar el servidor
-src/servidor/bd/mediciones.db
-src/servidor/bd/*.db-journal
+# ---- Servidor (PHP en Plesk) ----
+# Lleva la contraseña de la base de datos
+src/servidor/config.php

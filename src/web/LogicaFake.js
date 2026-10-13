@@ -6,11 +6,11 @@
 class LogicaFake {
 
     // --------------------------------------------------------------
-    // urlBase: Text --> LogicaFake()
-    // "" = mismo servidor que sirve esta página
+    // urlApi: Text --> LogicaFake()
+    // "api.php" = la API REST que está en la misma carpeta que esta página
     // --------------------------------------------------------------
-    constructor(urlBase = "") {
-        this.urlBase = urlBase
+    constructor(urlApi = "api.php") {
+        this.urlApi = urlApi
     }
 
     // --------------------------------------------------------------
@@ -19,7 +19,7 @@ class LogicaFake {
     // --------------------------------------------------------------
     async leerUltimaMedicion(tipo) {
         const filtro = tipo === undefined ? "" : "?tipo=" + tipo
-        const respuesta = await fetch(this.urlBase + "/medicion/ultima" + filtro)
+        const respuesta = await fetch(this.urlApi + "/medicion/ultima" + filtro)
         if (respuesta.status === 404) {
             return null
         }
