@@ -1,3 +1,12 @@
+// ==============================================================
+// Fichero:     EstadoNodo.java
+// Descripción: Estado que muestra la pantalla (observable, instancia
+//              única).
+// Diseño:      doc/android_design.md
+// Autor:       Aaron Blasco Blay
+// Fecha:       14/10/2026
+// Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
+// ==============================================================
 package com.example.blasco.proyectbioreal;
 
 import java.util.Locale;
@@ -10,6 +19,9 @@ import java.util.Locale;
 public class EstadoNodo {
 
     public interface Observador {
+        // ----------------------------------------------------------
+        // estado: EstadoNodo --> estadoCambiado()
+        // ----------------------------------------------------------
         void estadoCambiado(EstadoNodo estado);
     }
 
@@ -57,15 +69,15 @@ public class EstadoNodo {
     }
 
     // --------------------------------------------------------------
-    // medicion: Medicion, rssi: Z, major: N, minor: N --> registrarMedicion()
+    // m: MedicionNueva, contador: N, rssi: Z, major: N, minor: Z --> registrarMedicion()
     // --------------------------------------------------------------
-    public synchronized void registrarMedicion(Medicion medicion, int rssi, int major, int minor) {
-        if (medicion.getTipo() == Medicion.TIPO_O3) {
-            this.ultimoO3 = medicion.getValor();
-        } else if (medicion.getTipo() == Medicion.TIPO_TEMPERATURA) {
-            this.ultimaTemperatura = medicion.getValor();
+    public synchronized void registrarMedicion(MedicionNueva m, int contador, int rssi, int major, int minor) {
+        if (m.getTipo() == TipoMedicion.O3) {
+            this.ultimoO3 = m.getValor();
+        } else if (m.getTipo() == TipoMedicion.TEMPERATURA) {
+            this.ultimaTemperatura = m.getValor();
         }
-        this.contador = medicion.getContador();
+        this.contador = contador;
         this.rssi = rssi;
         this.major = major;
         this.minor = minor;
@@ -86,27 +98,48 @@ public class EstadoNodo {
         avisar();
     }
 
-    // ---- textos listos para la pantalla ----
+    // --------------------------------------------------------------
+    // getTextoBluetooth() --> Text
+    // --------------------------------------------------------------
     public synchronized String getTextoBluetooth() { return textoBluetooth; }
+
+    // --------------------------------------------------------------
+    // getTextoServidor() --> Text
+    // --------------------------------------------------------------
     public synchronized String getTextoServidor() { return textoServidor; }
 
+    // --------------------------------------------------------------
+    // getTextoO3() --> Text   ("O₃: 0.235 ppm")
+    // --------------------------------------------------------------
     public synchronized String getTextoO3() {
         return ultimoO3 == null ? "O₃: --" : String.format(Locale.US, "O₃: %.3f ppm", ultimoO3);
     }
 
+    // --------------------------------------------------------------
+    // getTextoTemperatura() --> Text   ("Temperatura: 21.5 °C")
+    // --------------------------------------------------------------
     public synchronized String getTextoTemperatura() {
         return ultimaTemperatura == null ? "Temperatura: --"
                 : String.format(Locale.US, "Temperatura: %.1f °C", ultimaTemperatura);
     }
 
+    // --------------------------------------------------------------
+    // getTextoContador() --> Text
+    // --------------------------------------------------------------
     public synchronized String getTextoContador() {
         return contador < 0 ? "Contador: --" : "Contador: " + contador;
     }
 
+    // --------------------------------------------------------------
+    // getTextoRssi() --> Text
+    // --------------------------------------------------------------
     public synchronized String getTextoRssi() {
         return contador < 0 ? "RSSI: --" : "RSSI: " + rssi + " dBm";
     }
 
+    // --------------------------------------------------------------
+    // getTextoTrama() --> Text   (major con su tipo y contador, y minor)
+    // --------------------------------------------------------------
     public synchronized String getTextoTrama() {
         return major < 0 ? "Major / Minor: --"
                 : "Major: " + major + " (tipo " + (major >> 8) + ", contador " + (major & 0xFF) + ") | Minor: " + minor;

@@ -1,3 +1,11 @@
+// ==============================================================
+// Fichero:     TramaIBeacon.java
+// Descripción: Decodifica los bytes de un anuncio BLE como trama iBeacon.
+// Diseño:      doc/android_design.md
+// Autor:       Aaron Blasco Blay
+// Fecha:       14/10/2026
+// Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
+// ==============================================================
 package com.example.blasco.proyectbioreal;
 
 import java.util.Arrays;
@@ -20,7 +28,6 @@ public class TramaIBeacon {
     private static final byte[] CABECERA_IBEACON = { 0x4C, 0x00, 0x02, 0x15 };
     private static final int LONGITUD_TRAS_CABECERA = 16 + 2 + 2 + 1;
 
-    private final byte[] losBytes;
     private byte[] uuid;
     private byte[] major;
     private byte[] minor;
@@ -31,7 +38,6 @@ public class TramaIBeacon {
     // bytes: [N] --> TramaIBeacon()
     // --------------------------------------------------------------
     public TramaIBeacon(byte[] bytes) {
-        this.losBytes = bytes;
 
         int posicionCabecera = buscarCabecera(bytes);
         if (posicionCabecera < 0) {
@@ -112,9 +118,8 @@ public class TramaIBeacon {
         return (short) getValorEntero();
     }
 
-    public byte[] getLosBytes() { return losBytes; }
-    public byte[] getUUID() { return uuid; }
-    public byte[] getMajor() { return major; }
-    public byte[] getMinor() { return minor; }
+    // --------------------------------------------------------------
+    // getTxPower() --> Z   (potencia calibrada a 1 m, en dBm)
+    // --------------------------------------------------------------
     public byte getTxPower() { return txPower; }
 }

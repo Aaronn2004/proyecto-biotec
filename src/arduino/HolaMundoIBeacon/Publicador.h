@@ -1,4 +1,13 @@
 // -*- mode: c++ -*-
+// ==============================================================
+// Fichero:     Publicador.h
+// Descripción: Codifica cada medida en una trama iBeacon (UUID, major,
+//              minor) y la anuncia.
+// Diseño:      doc/arduino_design.md
+// Autor:       Aaron Blasco Blay
+// Fecha:       14/10/2026
+// Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
+// ==============================================================
 #ifndef PUBLICADOR_H_INCLUIDO
 #define PUBLICADOR_H_INCLUIDO
 
@@ -19,13 +28,14 @@ private:
 
   const int8_t RSSI_A_1_METRO = -53;
 
-public:
   EmisoraBLE laEmisora {
     "Aaron_GTI", // nombre visible del dispositivo
     0x004c,      // fabricante: Apple (obligatorio en iBeacon)
     4            // txPower en dBm
   };
 
+public:
+  // TipoMedicion = { O3 = 11, TEMPERATURA = 12, RUIDO = 13 }
   enum MedicionesID {
     O3 = 11,
     TEMPERATURA = 12,
@@ -33,7 +43,7 @@ public:
   };
 
   // --------------------------------------------------------------
-  // Publicador()
+  // Publicador() -->
   // --------------------------------------------------------------
   Publicador() {
   }

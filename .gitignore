@@ -15,6 +15,10 @@ src/android/captures/
 *.aab
 *.iml
 
-# ---- Servidor (PHP en Plesk) ----
+# ---- Servidor: comunicación (PHP en Plesk) ----
 # Lleva la contraseña de la base de datos
-src/servidor/config.php
+src/communication/config.php
+
+# ---- Arduino: binario de los tests en el PC ----
+src/arduino/tests/nodo
+src/arduino/tests/nodo.exe

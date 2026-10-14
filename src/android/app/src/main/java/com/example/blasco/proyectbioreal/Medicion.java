@@ -1,75 +1,79 @@
+// ==============================================================
+// Fichero:     Medicion.java
+// Descripción: Tipo Medicion (dispositivo, tipo, valor, fecha) que
+//              devuelve la lógica del negocio.
+// Diseño:      doc/android_design.md
+// Autor:       Aaron Blasco Blay
+// Fecha:       14/10/2026
+// Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
+// ==============================================================
 package com.example.blasco.proyectbioreal;
 
-import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 // ==============================================================
-// Medicion = (dispositivo: Text, tipo: N, valor: R, contador: N)
-//   dispositivo: UUID del iBeacon (p. ej. "AARON-GTI-PBIO-1")
-//   contador: solo se usa dentro de la app (filtro de duplicados y
-//   pantalla); NO se envía al servidor (la BD solo guarda
-//   dispositivo, tipo, valor y fecha).
+// Medicion = ( dispositivo: Text, tipo: N, valor: R, fecha: Text )
+// Lo que devuelve la lógica del negocio al guardar (igual que en
+// business_logic_design.md).
 // ==============================================================
 public class Medicion {
-
-    public static final int TIPO_O3 = 11;
-    public static final int TIPO_TEMPERATURA = 12;
-    public static final int TIPO_RUIDO = 13;
-
-    // El O3 viaja en el minor como ppm * 1000 (sin signo)
-    private static final double FACTOR_O3 = 1000.0;
-    // La temperatura viaja como décimas de °C (con signo: puede ser negativa)
-    private static final double FACTOR_TEMPERATURA = 10.0;
 
     private final String dispositivo;
     private final int tipo;
     private final double valor;
-    private final int contador;
+    private final String fecha;
 
     // --------------------------------------------------------------
-    // dispositivo: Text, tipo: N, valor: R, contador: N --> Medicion()
+    // dispositivo: Text, tipo: N, valor: R, fecha: Text --> Medicion()
     // --------------------------------------------------------------
-    public Medicion(String dispositivo, int tipo, double valor, int contador) {
+    public Medicion(String dispositivo, int tipo, double valor, String fecha) {
         this.dispositivo = dispositivo;
         this.tipo = tipo;
         this.valor = valor;
-        this.contador = contador;
+        this.fecha = fecha;
     }
 
     // --------------------------------------------------------------
-    // trama: TramaIBeacon --> desdeTrama() --> Medicion
+    // json: Text --> desdeJSON() --> Medicion | null   (null si no se entiende)
+    // A mano (sin org.json) para poder probarlo con JUnit sin Android.
     // --------------------------------------------------------------
-    public static Medicion desdeTrama(TramaIBeacon trama) {
-        int tipo = trama.getTipoMedicion();
-        double valor;
-        if (tipo == TIPO_O3) {
-            valor = trama.getValorEntero() / FACTOR_O3;
-        } else if (tipo == TIPO_TEMPERATURA) {
-            valor = trama.getValorEnteroConSigno() / FACTOR_TEMPERATURA;
-        } else {
-            valor = trama.getValorEntero();
+    public static Medicion desdeJSON(String json) {
+        String dispositivo = buscar(json, "\"dispositivo\"\\s*:\\s*\"([^\"]*)\"");
+        String tipo = buscar(json, "\"tipo\"\\s*:\\s*(-?\\d+)");
+        String valor = buscar(json, "\"valor\"\\s*:\\s*(-?[0-9.eE+-]+)");
+        String fecha = buscar(json, "\"fecha\"\\s*:\\s*\"([^\"]*)\"");
+        if (dispositivo == null || tipo == null || valor == null || fecha == null) {
+            return null;
         }
-        return new Medicion(trama.getUUIDComoTexto(), tipo, valor, trama.getContador());
+        return new Medicion(dispositivo, Integer.parseInt(tipo), Double.parseDouble(valor), fecha);
     }
 
     // --------------------------------------------------------------
-    // toJSON() --> Text   {"dispositivo":"...","tipo":N,"valor":R}
-    // (a mano para que se pueda probar con JUnit sin Android; el UUID no
-    // necesita escaparse porque el servicio solo crea mediciones de
-    // nuestro beacon, "AARON-GTI-PBIO-1")
+    // texto: Text, patron: Text --> buscar() --> Text | null
     // --------------------------------------------------------------
-    public String toJSON() {
-        return String.format(Locale.US,
-                "{\"dispositivo\":\"%s\",\"tipo\":%d,\"valor\":%s}",
-                dispositivo, tipo, Double.toString(valor));
+    private static String buscar(String texto, String patron) {
+        if (texto == null) {
+            return null;
+        }
+        Matcher encontrado = Pattern.compile(patron).matcher(texto);
+        return encontrado.find() ? encontrado.group(1) : null;
     }
 
+    // --------------------------------------------------------------
+    // getDispositivo() --> Text
+    // --------------------------------------------------------------
     public String getDispositivo() { return dispositivo; }
+    // --------------------------------------------------------------
+    // getTipo() --> N
+    // --------------------------------------------------------------
     public int getTipo() { return tipo; }
+    // --------------------------------------------------------------
+    // getValor() --> R
+    // --------------------------------------------------------------
     public double getValor() { return valor; }
-    public int getContador() { return contador; }
-
-    @Override
-    public String toString() {
-        return toJSON();
-    }
+    // --------------------------------------------------------------
+    // getFecha() --> Text
+    // --------------------------------------------------------------
+    public String getFecha() { return fecha; }
 }

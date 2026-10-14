@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!-- ==============================================================
+  Fichero:     index.html
+  Descripción: GUI web. Muestra la última medición de O3 y de
+               temperatura. Solo habla con LogicaFake (nunca con la red).
+  Diseño:      doc/gui_design.md
+  Autor:       Aaron Blasco Blay
+  Fecha:       14/10/2026
+  Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
+=============================================================== -->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sprint 0 - Últimas mediciones</title>
+</head>
+<body>
+  <h1>Últimas mediciones</h1>
+
+  <h2>Ozono (O3)</h2>
+  <p>Valor: <b id="valor-11">-</b> ppm</p>
+  <p>Dispositivo: <span id="dispositivo-11">-</span> | Fecha: <span id="fecha-11">-</span></p>
+
+  <h2>Temperatura</h2>
+  <p>Valor: <b id="valor-12">-</b> °C</p>
+  <p>Dispositivo: <span id="dispositivo-12">-</span> | Fecha: <span id="fecha-12">-</span></p>
+
+  <p id="estado"></p>
+  <button id="botonActualizar">Actualizar</button>
+
+  <script src="../frontend_business_logic/LogicaFake.js"></script>
+  <script>
+    const laLogica = new LogicaFake()
+    const TIPOS = { O3: 11, TEMPERATURA: 12 }
+
+    // ----------------------------------------------------------
+    // tipo: N, m: Medicion | null --> pintarMedicion()
+    // pinta valor, dispositivo y fecha de ese tipo ("sin datos" / "-" si no hay)
+    // ----------------------------------------------------------
+    function pintarMedicion(tipo, m) {
+      const poner = (campo, texto) => { document.getElementById(campo + "-" + tipo).textContent = texto }
+      poner("valor", m === null ? "sin datos" : m.valor)
+      poner("dispositivo", m === null ? "-" : m.dispositivo)
+      poner("fecha", m === null ? "-" : new Date(m.fecha).toLocaleString())
+    }
+
+    // ----------------------------------------------------------
+    // mostrarUltimasMediciones()
+    // pide a LogicaFake la última de O3 (11) y la de temperatura (12)
+    // ----------------------------------------------------------
+    async function mostrarUltimasMediciones() {
+      const estado = document.getElementById("estado")
+      try {
+        for (const tipo of Object.values(TIPOS)) {
+          pintarMedicion(tipo, await laLogica.leerUltimaMedicion(tipo))
+        }
+        estado.textContent = "Actualizado: " + new Date().toLocaleTimeString()
+      } catch (error) {
+        estado.textContent = "Error: " + error.message
+      }
+    }
+
+    document.getElementById("botonActualizar").onclick = mostrarUltimasMediciones
+    mostrarUltimasMediciones()
+    setInterval(mostrarUltimasMediciones, 2000) // refresco automático cada 2 s
+  </script>
+</body>
+</html>

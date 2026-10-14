@@ -1,4 +1,12 @@
 // -*- mode: c++ -*-
+// ==============================================================
+// Fichero:     PuertoSerie.h
+// Descripción: Escritura por el puerto serie USB (depuración).
+// Diseño:      doc/arduino_design.md
+// Autor:       Aaron Blasco Blay
+// Fecha:       14/10/2026
+// Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
+// ==============================================================
 #ifndef PUERTO_SERIE_H_INCLUIDO
 #define PUERTO_SERIE_H_INCLUIDO
 
@@ -25,7 +33,7 @@ public:
   }
 
   // --------------------------------------------------------------
-  // mensaje: T --> escribir() -->
+  // mensaje: Text | Z --> escribir() -->
   // --------------------------------------------------------------
   template <typename T>
   void escribir( T mensaje ) {

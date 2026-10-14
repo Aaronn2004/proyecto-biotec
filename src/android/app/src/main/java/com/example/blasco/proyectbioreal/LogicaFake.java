@@ -1,35 +1,63 @@
+// ==============================================================
+// Fichero:     LogicaFake.java
+// Descripción: Lógica del negocio del cliente móvil ("fake"/proxy): misma
+//              firma que la del servidor, por dentro hace POST /medicion.
+// Diseño:      doc/android_design.md
+// Autor:       Aaron Blasco Blay
+// Fecha:       14/10/2026
+// Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
+// ==============================================================
 package com.example.blasco.proyectbioreal;
 
 // ==============================================================
-// LogicaFake (móvil): desde fuera parece la lógica del negocio,
-// pero solo hace de cliente REST contra el servidor.
+// LogicaFake (móvil): ofrece la MISMA función que la lógica del
+// negocio del servidor,
+//     m: MedicionNueva --> guardarMedicion() --> Medicion
+// pero por dentro hace una petición REST (POST /medicion).
 // ==============================================================
 public class LogicaFake {
 
     // Dirección de api.php en el hosting Plesk de la UPV
-    // Es la dirección de api.php en tu hosting (la misma carpeta que la web).
-    // Al estar en internet, el móvil no tiene que estar en la misma WiFi que el PC.
-    public static final String URL_SERVIDOR = "https://ablabla.upv.edu.es/biometria/api.php";
+    public static final String URL_SERVIDOR = "https://ablabla.upv.edu.es/biometria/communication/api.php";
 
-    public interface Resultado {
-        void callback(boolean exito, String detalle);
+    // Cómo llega el resultado (Android no deja esperar a la red en el
+    // hilo principal): o la Medicion guardada, o el motivo del error
+    // (equivale a la excepción que lanza la lógica del servidor).
+    public interface Respuesta {
+        // ----------------------------------------------------------
+        // guardada: Medicion --> medicionGuardada()
+        // ----------------------------------------------------------
+        void medicionGuardada(Medicion guardada);
+
+        // ----------------------------------------------------------
+        // motivo: Text --> error()
+        // ----------------------------------------------------------
+        void error(String motivo);
     }
 
     private final String urlServidor;
     private final PeticionarioREST elPeticionario = new PeticionarioREST();
 
     // --------------------------------------------------------------
-    // urlServidor: Text (dirección de api.php) --> LogicaFake()
+    // urlServidor: Text --> LogicaFake()
     // --------------------------------------------------------------
     public LogicaFake(String urlServidor) {
         this.urlServidor = urlServidor;
     }
 
     // --------------------------------------------------------------
-    // medicion: Medicion --> guardarMedicion() --> exito: B, detalle: Text  (por callback)
+    // m: MedicionNueva --> guardarMedicion() --> Medicion
+    // (por Respuesta; si falla, Respuesta.error(motivo))
     // --------------------------------------------------------------
-    public void guardarMedicion(Medicion medicion, Resultado resultado) {
-        elPeticionario.hacerPeticionREST("POST", urlServidor + "/medicion", medicion.toJSON(),
-                (codigo, cuerpo) -> resultado.callback(codigo == 201, codigo + " " + cuerpo));
+    public void guardarMedicion(MedicionNueva m, Respuesta respuesta) {
+        elPeticionario.hacerPeticionREST("POST", urlServidor + "/medicion", m.toJSON(),
+                (codigo, cuerpo) -> {
+                    Medicion guardada = codigo == 201 ? Medicion.desdeJSON(cuerpo) : null;
+                    if (guardada != null) {
+                        respuesta.medicionGuardada(guardada);
+                    } else {
+                        respuesta.error(codigo + " " + cuerpo);
+                    }
+                });
     }
 }

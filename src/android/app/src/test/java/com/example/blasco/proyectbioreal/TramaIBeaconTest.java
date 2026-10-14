@@ -1,7 +1,16 @@
+// ==============================================================
+// Fichero:     TramaIBeaconTest.java
+// Descripción: Tests JUnit de TramaIBeacon, MedicionNueva y Medicion.
+// Diseño:      doc/android_design.md
+// Autor:       Aaron Blasco Blay
+// Fecha:       14/10/2026
+// Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
+// ==============================================================
 package com.example.blasco.proyectbioreal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -30,6 +39,9 @@ public class TramaIBeaconTest {
         return anuncio;
     }
 
+    // --------------------------------------------------------------
+    // extraeUUIDMajorMinorConFlags() -->   (test)
+    // --------------------------------------------------------------
     @Test
     public void extraeUUIDMajorMinorConFlags() {
         TramaIBeacon trama = new TramaIBeacon(construirAnuncio(true, "AARON-GTI-PBIO-1", (11 << 8) + 7, 235));
@@ -41,6 +53,9 @@ public class TramaIBeaconTest {
         assertEquals(-53, trama.getTxPower());
     }
 
+    // --------------------------------------------------------------
+    // funcionaTambienSinFlags() -->   (test)
+    // --------------------------------------------------------------
     @Test
     public void funcionaTambienSinFlags() {
         TramaIBeacon trama = new TramaIBeacon(construirAnuncio(false, "AARON-GTI-PBIO-1", (11 << 8) + 200, 65000));
@@ -49,6 +64,9 @@ public class TramaIBeaconTest {
         assertEquals(65000, trama.getValorEntero()); // sin signo
     }
 
+    // --------------------------------------------------------------
+    // noEsIBeaconSiNoHayCabecera() -->   (test)
+    // --------------------------------------------------------------
     @Test
     public void noEsIBeaconSiNoHayCabecera() {
         assertFalse(new TramaIBeacon(new byte[] { 0x02, 0x01, 0x06, 0x05, 0x09, 'H', 'o', 'l', 'a' }).esIBeacon());
@@ -56,37 +74,71 @@ public class TramaIBeaconTest {
         assertFalse(new TramaIBeacon(new byte[0]).esIBeacon());
     }
 
+    // --------------------------------------------------------------
+    // medicionDesdeTramaConvierteO3APpm() -->   (test)
+    // --------------------------------------------------------------
     @Test
     public void medicionDesdeTramaConvierteO3APpm() {
         TramaIBeacon trama = new TramaIBeacon(construirAnuncio(true, "AARON-GTI-PBIO-1", (11 << 8) + 7, 235));
-        Medicion medicion = Medicion.desdeTrama(trama);
+        MedicionNueva medicion = MedicionNueva.desdeTrama(trama);
         assertEquals("AARON-GTI-PBIO-1", medicion.getDispositivo());
-        assertEquals(Medicion.TIPO_O3, medicion.getTipo());
+        assertEquals(TipoMedicion.O3, medicion.getTipo());
         assertEquals(0.235, medicion.getValor(), 1e-9);
-        assertEquals(7, medicion.getContador());
+        assertEquals(7, trama.getContador());
     }
 
+    // --------------------------------------------------------------
+    // medicionNuevaToJSONLlevaDispositivoTipoYValor() -->   (test)
+    // --------------------------------------------------------------
     @Test
-    public void medicionToJSONLlevaDispositivoTipoYValorPeroNoContador() {
+    public void medicionNuevaToJSONLlevaDispositivoTipoYValor() {
         assertEquals("{\"dispositivo\":\"AARON-GTI-PBIO-1\",\"tipo\":11,\"valor\":0.235}",
-                new Medicion("AARON-GTI-PBIO-1", 11, 0.235, 7).toJSON());
+                new MedicionNueva("AARON-GTI-PBIO-1", 11, 0.235).toJSON());
     }
 
+    // --------------------------------------------------------------
+    // medicionDesdeJSONLeeLaRespuestaDelServidor() -->   (test)
+    // --------------------------------------------------------------
+    @Test
+    public void medicionDesdeJSONLeeLaRespuestaDelServidor() {
+        Medicion m = Medicion.desdeJSON(
+                "{\"dispositivo\":\"AARON-GTI-PBIO-1\",\"tipo\":12,\"valor\":-3.5,\"fecha\":\"2026-10-14T10:45:12.345+02:00\"}");
+        assertEquals("AARON-GTI-PBIO-1", m.getDispositivo());
+        assertEquals(12, m.getTipo());
+        assertEquals(-3.5, m.getValor(), 1e-9);
+        assertEquals("2026-10-14T10:45:12.345+02:00", m.getFecha());
+    }
+
+    // --------------------------------------------------------------
+    // medicionDesdeJSONIncompletoDevuelveNull() -->   (test)
+    // --------------------------------------------------------------
+    @Test
+    public void medicionDesdeJSONIncompletoDevuelveNull() {
+        assertNull(Medicion.desdeJSON("{\"error\":\"no hay mediciones\"}"));
+        assertNull(Medicion.desdeJSON(null));
+    }
+
+    // --------------------------------------------------------------
+    // temperaturaNegativaSeDecodificaConSigno() -->   (test)
+    // --------------------------------------------------------------
     @Test
     public void temperaturaNegativaSeDecodificaConSigno() {
         // -35 décimas = -3.5 °C ; en 16 bits es 0xFFDD
         TramaIBeacon trama = new TramaIBeacon(construirAnuncio(true, "AARON-GTI-PBIO-1", (12 << 8) + 9, 0xFFDD));
         assertEquals(65501, trama.getValorEntero());
         assertEquals(-35, trama.getValorEnteroConSigno());
-        Medicion medicion = Medicion.desdeTrama(trama);
-        assertEquals(Medicion.TIPO_TEMPERATURA, medicion.getTipo());
+        MedicionNueva medicion = MedicionNueva.desdeTrama(trama);
+        assertEquals(TipoMedicion.TEMPERATURA, medicion.getTipo());
         assertEquals(-3.5, medicion.getValor(), 1e-9);
-        assertEquals(9, medicion.getContador());
+        assertEquals(9, trama.getContador());
     }
 
+    // --------------------------------------------------------------
+    // temperaturaPositiva() -->   (test)
+    // --------------------------------------------------------------
     @Test
     public void temperaturaPositiva() {
-        Medicion medicion = Medicion.desdeTrama(
+        MedicionNueva medicion = MedicionNueva.desdeTrama(
                 new TramaIBeacon(construirAnuncio(true, "AARON-GTI-PBIO-1", (12 << 8) + 1, 215)));
         assertEquals(21.5, medicion.getValor(), 1e-9);
     }

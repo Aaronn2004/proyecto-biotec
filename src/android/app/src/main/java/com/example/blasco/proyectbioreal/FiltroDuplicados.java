@@ -1,3 +1,12 @@
+// ==============================================================
+// Fichero:     FiltroDuplicados.java
+// Descripción: Evita enviar varias veces el mismo anuncio (por tipo y
+//              contador).
+// Diseño:      doc/android_design.md
+// Autor:       Aaron Blasco Blay
+// Fecha:       14/10/2026
+// Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
+// ==============================================================
 package com.example.blasco.proyectbioreal;
 
 import java.util.HashMap;

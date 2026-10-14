@@ -1,4 +1,13 @@
 // -*- mode: c++ -*-
+// ==============================================================
+// Fichero:     EmisoraBLE.h
+// Descripción: Envoltorio de la pila Bluefruit para emitir anuncios
+//              iBeacon.
+// Diseño:      doc/arduino_design.md
+// Autor:       Aaron Blasco Blay
+// Fecha:       14/10/2026
+// Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
+// ==============================================================
 #ifndef EMISORA_BLE_H_INCLUIDO
 #define EMISORA_BLE_H_INCLUIDO
 
@@ -16,10 +25,10 @@ private:
 
 public:
   // --------------------------------------------------------------
-  // nombre: Text, fabricanteID: N, txPower: Z --> EmisoraBLE()
+  // nombre: Text, fabricante: N, potencia: Z --> EmisoraBLE() -->
   // --------------------------------------------------------------
-  EmisoraBLE( const char * nombre, uint16_t fabID, int8_t power )
-    : nombreEmisora( nombre ), fabricanteID( fabID ), txPower( power ) {
+  EmisoraBLE( const char * nombre, uint16_t fabricante, int8_t potencia )
+    : nombreEmisora( nombre ), fabricanteID( fabricante ), txPower( potencia ) {
   }
 
   // --------------------------------------------------------------
@@ -40,7 +49,7 @@ public:
   }
 
   // --------------------------------------------------------------
-  // estaAnunciando() <-- B
+  // estaAnunciando() --> B
   // --------------------------------------------------------------
   bool estaAnunciando() {
     return Bluefruit.Advertising.isRunning();

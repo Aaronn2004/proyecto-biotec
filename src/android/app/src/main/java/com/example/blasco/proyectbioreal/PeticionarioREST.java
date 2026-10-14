@@ -1,3 +1,12 @@
+// ==============================================================
+// Fichero:     PeticionarioREST.java
+// Descripción: Peticiones HTTP en un hilo aparte (usado solo por
+//              LogicaFake).
+// Diseño:      doc/android_design.md
+// Autor:       Aaron Blasco Blay
+// Fecha:       14/10/2026
+// Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
+// ==============================================================
 package com.example.blasco.proyectbioreal;
 
 import java.io.ByteArrayOutputStream;
@@ -16,15 +25,18 @@ import java.util.concurrent.Executors;
 public class PeticionarioREST {
 
     public interface RespuestaREST {
+        // ----------------------------------------------------------
+        // codigo: Z, cuerpo: Text --> callback()   (codigo -1 = error de red)
+        // ----------------------------------------------------------
         void callback(int codigo, String cuerpo);
     }
 
     private static final ExecutorService hilos = Executors.newSingleThreadExecutor();
 
     // --------------------------------------------------------------
-    // metodo: Text, urlDestino: Text, cuerpo: Text
+    // metodo: Text, urlDestino: Text, cuerpo: Text | null
     //    --> hacerPeticionREST()
-    //    --> codigo: Z, cuerpoRespuesta: Text   (por callback; codigo -1 = error de red)
+    //    --> codigo: Z, cuerpoRespuesta: Text   (por RespuestaREST, en otro hilo; codigo -1 = error de red)
     // --------------------------------------------------------------
     public void hacerPeticionREST(String metodo, String urlDestino, String cuerpo, RespuestaREST laRespuesta) {
         hilos.execute(() -> {

@@ -1,3 +1,11 @@
+// ==============================================================
+// Fichero:     MainActivity.java
+// Descripción: Pantalla principal: 3 botones y el estado del nodo (GUI).
+// Diseño:      doc/android_design.md
+// Autor:       Aaron Blasco Blay
+// Fecha:       14/10/2026
+// Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
+// ==============================================================
 package com.example.blasco.proyectbioreal;
 
 import android.Manifest;
@@ -35,9 +43,12 @@ public class MainActivity extends AppCompatActivity {
     private TextView textoBluetooth, textoO3, textoTemperatura, textoContador,
             textoRssi, textoTrama, textoServidor;
 
+    // --------------------------------------------------------------
+    // estadoGuardado: Bundle --> onCreate() -->   (enlaza los textos y pide permisos)
+    // --------------------------------------------------------------
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void onCreate(Bundle estadoGuardado) {
+        super.onCreate(estadoGuardado);
         setContentView(R.layout.activity_main);
 
         textoBluetooth = findViewById(R.id.textoBluetooth);
@@ -51,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
         pedirPermisosNecesarios();
     }
 
+    // --------------------------------------------------------------
+    // onResume() -->   (empieza a observar EstadoNodo)
+    // --------------------------------------------------------------
     @Override
     protected void onResume() {
         super.onResume();
@@ -58,6 +72,9 @@ public class MainActivity extends AppCompatActivity {
         EstadoNodo.getInstancia().observar(estado -> runOnUiThread(() -> pintarEstado(estado)));
     }
 
+    // --------------------------------------------------------------
+    // onPause() -->   (deja de observar EstadoNodo)
+    // --------------------------------------------------------------
     @Override
     protected void onPause() {
         EstadoNodo.getInstancia().observar(null); // sin pantalla visible no hay nada que pintar
@@ -99,13 +116,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // --------------------------------------------------------------
+    // codigo: Z, permisos: [Text], resultados: [Z] --> onRequestPermissionsResult()
+    // (avisa si el usuario no concede los permisos)
+    // --------------------------------------------------------------
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode != CODIGO_PETICION_PERMISOS) {
+    public void onRequestPermissionsResult(int codigo, @NonNull String[] permisos, @NonNull int[] resultados) {
+        super.onRequestPermissionsResult(codigo, permisos, resultados);
+        if (codigo != CODIGO_PETICION_PERMISOS) {
             return;
         }
-        for (int resultado : grantResults) {
+        for (int resultado : resultados) {
             if (resultado != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Sin permisos no se pueden escanear beacons", Toast.LENGTH_LONG).show();
                 return;
@@ -114,14 +135,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // --------------------------------------------------------------
-    // modo: Text --> arrancarServicio()
+    // modo: Modo --> arrancarServicio()
     // --------------------------------------------------------------
     private void arrancarServicio(String modo) {
         if (!bluetoothListo()) {
             return;
         }
-        Intent intent = new Intent(this, ServicioEscuharBeacons.class);
-        intent.putExtra(ServicioEscuharBeacons.EXTRA_MODO, modo);
+        Intent intent = new Intent(this, ServicioEscucharBeacons.class);
+        intent.putExtra(ServicioEscucharBeacons.EXTRA_MODO, modo);
         startService(intent);
     }
 
@@ -161,21 +182,30 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
     }
 
+    // --------------------------------------------------------------
+    // v: View --> botonBuscarDispositivosBTLEPulsado() -->
     // Botón 1: buscar TODOS los dispositivos BLE (solo se listan en el Log)
+    // --------------------------------------------------------------
     public void botonBuscarDispositivosBTLEPulsado(View v) {
         Log.d(ETIQUETA_LOG, "botonBuscarDispositivosBTLEPulsado()");
-        arrancarServicio(ServicioEscuharBeacons.MODO_TODOS);
+        arrancarServicio(ServicioEscucharBeacons.MODO_TODOS);
     }
 
+    // --------------------------------------------------------------
+    // v: View --> botonDetenerBusquedaDispositivosBTLEPulsado() -->
     // Botón 2: detener la búsqueda
+    // --------------------------------------------------------------
     public void botonDetenerBusquedaDispositivosBTLEPulsado(View v) {
         Log.d(ETIQUETA_LOG, "botonDetenerBusquedaDispositivosBTLEPulsado()");
-        stopService(new Intent(this, ServicioEscuharBeacons.class));
+        stopService(new Intent(this, ServicioEscucharBeacons.class));
     }
 
+    // --------------------------------------------------------------
+    // v: View --> botonBuscarNuestroDispositivoBTLEPulsado() -->
     // Botón 3: buscar NUESTRO dispositivo y enviar sus medidas al servidor
+    // --------------------------------------------------------------
     public void botonBuscarNuestroDispositivoBTLEPulsado(View v) {
         Log.d(ETIQUETA_LOG, "botonBuscarNuestroDispositivoBTLEPulsado()");
-        arrancarServicio(ServicioEscuharBeacons.MODO_NUESTRO);
+        arrancarServicio(ServicioEscucharBeacons.MODO_NUESTRO);
     }
 }

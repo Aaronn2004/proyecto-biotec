@@ -1,14 +1,21 @@
 // -*- mode: c++ -*-
 // ==============================================================
-// HolaMundoIBeacon.ino
-// Nodo sensor (SparkFun Pro nRF52840 Mini) - Sprint 0
+// Fichero:     HolaMundoIBeacon.ino
+// Descripción: Programa principal del nodo sensor: cada 2 s anuncia por
+//              iBeacon una medida ficticia (O3 y temperatura,
+//              alternando).
+// Diseño:      doc/arduino_design.md
+// Autor:       Aaron Blasco Blay
+// Fecha:       14/10/2026
+// Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
 //
+// Nodo sensor (SparkFun Pro nRF52840 Mini) - Sprint 0
 // Emite medidas FICTICIAS (O3 y temperatura) como tramas iBeacon:
 //   UUID  = identificador de NUESTRO dispositivo (16 bytes ASCII)
 //   major = (tipoMedida << 8) + contador   -> byte alto: tipo, byte bajo: contador
-//   minor = valor de la medida (entero, ppm * 1000)
+//   minor = valor de la medida (O3: ppm * 1000 ; temperatura: décimas de °C con signo)
 //
-// Para cambiar la medida: edita VALOR_O3_FICTICIO_PPM en Medidor.h
+// Para cambiar la medida: edita VALOR_O3_FICTICIO y VALOR_TEMPERATURA_FICTICIO en Medidor.h
 // ==============================================================
 
 #include <bluefruit.h>
@@ -34,7 +41,8 @@ namespace Globales {
 };
 
 // --------------------------------------------------------------
-// setup()
+// setup() -->
+// enciende la emisora BLE y el medidor
 // --------------------------------------------------------------
 void setup() {
   // OJO: NO esperamos al puerto serie (while(!Serial)).
@@ -47,9 +55,6 @@ void setup() {
   Globales::elPuerto.escribir( "---- setup(): fin ----\n" );
 }
 
-// --------------------------------------------------------------
-// loop()
-// --------------------------------------------------------------
 namespace Loop {
   uint8_t contador = 0;
 };
@@ -58,6 +63,10 @@ namespace Loop {
 // y luego se pasa a la siguiente (O3, temperatura, O3, ...)
 const long TIEMPO_ENTRE_DATOS_MS = 2000;
 
+// --------------------------------------------------------------
+// loop() -->
+// mide O3 y temperatura y anuncia cada una TIEMPO_ENTRE_DATOS_MS
+// --------------------------------------------------------------
 void loop() {
   using namespace Loop;
   using namespace Globales;

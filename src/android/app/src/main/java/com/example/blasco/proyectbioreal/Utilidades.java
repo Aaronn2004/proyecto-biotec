@@ -1,3 +1,11 @@
+// ==============================================================
+// Fichero:     Utilidades.java
+// Descripción: Conversión de bytes a texto y a entero.
+// Diseño:      doc/android_design.md
+// Autor:       Aaron Blasco Blay
+// Fecha:       14/10/2026
+// Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
+// ==============================================================
 package com.example.blasco.proyectbioreal;
 
 public class Utilidades {
@@ -10,18 +18,6 @@ public class Utilidades {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {
             sb.append((char) b);
-        }
-        return sb.toString();
-    }
-
-    // --------------------------------------------------------------
-    // bytes: [N] --> bytesToHexString() --> Text
-    // --------------------------------------------------------------
-    public static String bytesToHexString(byte[] bytes) {
-        if (bytes == null) return "";
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02X", b));
         }
         return sb.toString();
     }

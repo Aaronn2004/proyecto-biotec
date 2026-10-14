@@ -1,4 +1,13 @@
 // -*- mode: c++ -*-
+// ==============================================================
+// Fichero:     Medidor.h
+// Descripción: Medidor FICTICIO de O3 y temperatura (Sprint 0): valores
+//              editables en el código.
+// Diseño:      doc/arduino_design.md
+// Autor:       Aaron Blasco Blay
+// Fecha:       14/10/2026
+// Copyright:   (c) 2026 Aaron Blasco Blay - GTI, UPV
+// ==============================================================
 #ifndef MEDIDOR_H_INCLUIDO
 #define MEDIDOR_H_INCLUIDO
 
@@ -22,10 +31,14 @@ const int16_t VALOR_MAX = 400;
 // Puede ser negativa (-35 = -3.5 °C): viaja como entero con signo.
 const int16_t VALOR_TEMPERATURA_FICTICIO = 215;
 
+// Rango del modo aleatorio de la temperatura (décimas de °C: 15.0 .. 30.0 °C)
+const int16_t TEMPERATURA_MIN = 150;
+const int16_t TEMPERATURA_MAX = 300;
+
 class Medidor {
 public:
   // --------------------------------------------------------------
-  // Medidor()
+  // Medidor() -->
   // --------------------------------------------------------------
   Medidor() {
   }
@@ -52,7 +65,7 @@ public:
   // --------------------------------------------------------------
   int16_t medirTemperatura() {
     if ( USAR_VALOR_ALEATORIO ) {
-      return (int16_t) random( 150, 301 ); // 15.0 .. 30.0 °C
+      return (int16_t) random( TEMPERATURA_MIN, TEMPERATURA_MAX + 1 );
     }
     return VALOR_TEMPERATURA_FICTICIO;
   }
